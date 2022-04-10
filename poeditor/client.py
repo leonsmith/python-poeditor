@@ -10,58 +10,18 @@
 
 import json
 import requests
-import sys
 import tempfile
 import warnings
 
 from datetime import datetime
 
-__all__ = ["POEditorException", "POEditorArgsException", "POEditorAPI"]
+from poeditor.exceptions import POEditorException, POEditorArgsException
+
+__all__ = ["POEditorAPI"]
 
 
-if sys.version_info < (3, 2):
-    from datetime import timedelta
-
-    def parse_datetime(dt_string):
-        # Hacky and not really equivalent to the Python3.2 version but will do for most use cases,
-        # that way we can avoid adding an extra dependency like dateutil or iso8601
-        ret = datetime.strptime(dt_string[:19], "%Y-%m-%dT%H:%M:%S")
-        if dt_string[19] == "+":
-            ret -= timedelta(hours=int(dt_string[20:22]), minutes=int(dt_string[22:]))
-        elif dt_string[19] == "-":
-            ret += timedelta(hours=int(dt_string[20:22]), minutes=int(dt_string[22:]))
-        return ret
-
-else:
-    # https://docs.python.org/3/whatsnew/3.2.html#datetime-and-time
-    def parse_datetime(dt_string):
-        return datetime.strptime(dt_string, "%Y-%m-%dT%H:%M:%S%z")
-
-
-class POEditorException(Exception):
-    """
-    POEditor API exception
-    """
-
-    def __init__(self, error_code, status, message):
-        self.exp = "POEditorException"
-        self.error_code = error_code
-        self.message = "Status '{}', code {}: {}".format(status, error_code, message)
-        super(POEditorException, self).__init__()
-
-    def __str__(self):
-        return self.message
-
-
-class POEditorArgsException(Exception):
-    """
-    POEditor args method exception
-    """
-
-    def __init__(self, message):
-        self.exp = "POEditorArgsException"
-        self.message = message
-        super(POEditorArgsException, self).__init__()
+def parse_datetime(dt_string):
+    return datetime.strptime(dt_string, "%Y-%m-%dT%H:%M:%S%z")
 
 
 class POEditorAPI(object):
@@ -303,14 +263,14 @@ class POEditorAPI(object):
             {
                 "term": "Add new list",
                 "context": "",
-                "reference": "\/projects",
+                "reference": "/projects",
                 "plural": "",
                 "comment": ""
             },
             {
                 "term": "one project found",
                 "context": "",
-                "reference": "\/projects",
+                "reference": "/projects",
                 "plural": "%d projects found",
                 "comment": "Make sure you translate the plural forms",
                 "tags": [
@@ -321,7 +281,7 @@ class POEditorAPI(object):
             {
                 "term": "Show all projects",
                 "context": "",
-                "reference": "\/projects",
+                "reference": "/projects",
                 "plural": "",
                 "tags": "just_a_tag"
             }
@@ -385,14 +345,14 @@ class POEditorAPI(object):
             {
                 "term": "Add new list",
                 "context": "",
-                "reference": "\/projects",
+                "reference": "/projects",
                 "plural": "",
                 "comment": ""
             },
             {
                 "term": "one project found",
                 "context": "",
-                "reference": "\/projects",
+                "reference": "/projects",
                 "plural": "%d projects found",
                 "comment": "Make sure you translate the plural forms",
                 "tags": [
@@ -403,7 +363,7 @@ class POEditorAPI(object):
             {
                 "term": "Show all projects",
                 "context": "",
-                "reference": "\/projects",
+                "reference": "/projects",
                 "plural": "",
                 "tags": "just_a_tag"
             }
