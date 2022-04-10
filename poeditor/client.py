@@ -78,51 +78,58 @@ class Client(object):
         """
         return f"{self.BASE}/{path}"
 
-    def _make_request(self, path: str, payload, headers=None):
-        kwargs: Dict[str, Any] = {}
+    def _make_request(self, path: str, payload: Dict[str, Any]) -> Any:
 
-        if file := payload.pop('file', None):
-            kwargs["files"] = {"file": file}
+        if file := payload.pop("file", None):
+            files = {"file": file}
+        else:
+            files = None
 
         response = requests.post(
             self._url(path),
             data=payload,
-            headers=headers,
-            **kwargs,
+            files=files,
         )
 
-        if response.status_code != 200:
+        if not response.ok:
             raise POEditorException(
-                status="fail", error_code=response.status_code, message=response.reason
+                status="fail",
+                error_code=response.status_code,
+                message=response.reason,
             )
 
-        data = response.json()
-
-        if "response" not in data:
+        try:
+            data = response.json()["response"]
+        except ValueError:
             raise POEditorException(
-                status="fail", error_code=-1, message='"response" key is not present'
+                status="fail",
+                error_code=-1,
+                message="Could not parse json response",
+            )
+        except KeyError:
+            raise POEditorException(
+                status="fail",
+                error_code=-1,
+                message='"response" key is not present',
             )
 
-        if (
-            "status" in data["response"]
-            and data["response"]["status"] != self.SUCCESS_CODE
-        ):
+        if data.get("status") != self.SUCCESS_CODE:
             raise POEditorException(
-                error_code=data["response"].get("code"),
-                status=data["response"]["status"],
-                message=data["response"].get("message"),
+                error_code=data.get("code"),
+                status=data.get("status"),
+                message=data.get("message"),
             )
 
-        return data
+        return response.json()
 
-    def _run(self, path: str, headers=None, **kwargs):
+    def _run(self, path: str, **kwargs):
         """
         Requests API
         """
         payload = kwargs
         payload.update({"api_token": self.api_token})
 
-        return self._make_request(path, payload, headers)
+        return self._make_request(path, payload)
 
     def _project_formatter(self, data):
         """
