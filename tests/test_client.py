@@ -291,7 +291,3 @@ class TestClient(unittest.TestCase):
                 os.remove(self.file_path)
             except:
                 pass
-
-
-if __name__ == '__main__':
-    unittest.main()
