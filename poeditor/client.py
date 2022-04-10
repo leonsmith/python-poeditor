@@ -13,15 +13,10 @@ import requests
 import tempfile
 import warnings
 
-from datetime import datetime
-
 from poeditor.exceptions import POEditorException, POEditorArgsException
+from poeditor.utils import parse_datetime
 
 __all__ = ["POEditorAPI"]
-
-
-def parse_datetime(dt_string):
-    return datetime.strptime(dt_string, "%Y-%m-%dT%H:%M:%S%z")
 
 
 class POEditorAPI(object):
