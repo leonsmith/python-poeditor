@@ -11,6 +11,7 @@
 import json
 import tempfile
 import warnings
+from typing import Dict, Any
 
 import requests
 
@@ -78,7 +79,7 @@ class POEditorAPI(object):
         return f"{self.BASE}/{path}"
 
     def _make_request(self, path: str, payload, headers=None):
-        kwargs = {}
+        kwargs: Dict[str, Any] = {}
         if payload.get("file"):
             kwargs["files"] = {"file": payload.pop("file")}
         response = requests.post(
