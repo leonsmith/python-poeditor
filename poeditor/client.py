@@ -114,23 +114,6 @@ class POEditorAPI(object):
 
         return self._make_request(url, payload, headers)
 
-    def _apiv1_run(self, action, headers=None, **kwargs):
-        """
-        Kept for backwards compatibility of this client
-        See "self.clear_reference_language"
-        """
-        warnings.warn(
-            "POEditor API v1 is deprecated. Use POEditorAPI._run method to call API v2",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
-        url = "https://poeditor.com/api/"
-        payload = kwargs
-        payload.update({"action": action, "api_token": self.api_token})
-
-        return self._make_request(url, payload, headers)
-
     def _project_formatter(self, data):
         """
         Project object
@@ -232,17 +215,6 @@ class POEditorAPI(object):
         Sets a reference language to project
         """
         return self.update_project(project_id, reference_language=language_code)
-
-    def clear_reference_language(self, project_id):
-        """
-        Clears reference language from project
-
-        Could not find how to reproduce the "clear_reference_language" v1 action with the v2 API.
-        Calling v2 projects/update with reference_language='' or reference_language=None did not work.
-        https://poeditor.com/docs/api#projects_update
-        """
-        self._apiv1_run(action="clear_reference_language", id=project_id)
-        return True
 
     def view_project_terms(self, project_id, language_code=None):
         """

@@ -75,9 +75,6 @@ class TestClient(unittest.TestCase):
         )
         self.assertTrue(result)
 
-        result = client.clear_reference_language(project_id=self.new_project_id)
-        self.assertTrue(result)
-
         # Plays with terms:
         terms = client.view_project_terms(
             project_id=self.new_project_id, language_code="fr"
