@@ -1,5 +1,4 @@
-
-__all__ = ["POEditorException", 'POEditorArgsException']
+__all__ = ["POEditorException", "POEditorArgsException"]
 
 
 class POEditorException(Exception):

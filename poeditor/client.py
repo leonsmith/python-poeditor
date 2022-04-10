@@ -9,11 +9,12 @@
 """
 
 import json
-import requests
 import tempfile
 import warnings
 
-from poeditor.exceptions import POEditorException, POEditorArgsException
+import requests
+
+from poeditor.exceptions import POEditorArgsException, POEditorException
 from poeditor.utils import parse_datetime
 
 __all__ = ["POEditorAPI"]
@@ -81,7 +82,10 @@ class POEditorAPI(object):
         if payload.get("file"):
             kwargs["files"] = {"file": payload.pop("file")}
         response = requests.post(
-            self._url(path), data=payload, headers=headers, **kwargs,
+            self._url(path),
+            data=payload,
+            headers=headers,
+            **kwargs,
         )
 
         if response.status_code != 200:

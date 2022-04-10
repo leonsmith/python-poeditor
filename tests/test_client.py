@@ -1,10 +1,9 @@
-import re
-import os
-import unittest
 import logging
+import os
+import re
+import unittest
 
-from poeditor.client import POEditorAPI, POEditorException, POEditorArgsException
-
+from poeditor.client import POEditorAPI, POEditorArgsException, POEditorException
 
 logger = logging.getLogger(__name__)
 
