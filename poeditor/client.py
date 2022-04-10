@@ -80,8 +80,10 @@ class Client(object):
 
     def _make_request(self, path: str, payload, headers=None):
         kwargs: Dict[str, Any] = {}
-        if payload.get("file"):
-            kwargs["files"] = {"file": payload.pop("file")}
+
+        if file := payload.pop('file', None):
+            kwargs["files"] = {"file": file}
+
         response = requests.post(
             self._url(path),
             data=payload,
