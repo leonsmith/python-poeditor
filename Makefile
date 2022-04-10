@@ -1,11 +1,16 @@
+SRC = poeditor/
+TESTS = tests/
+
 env:
 	poetry install
 
 fmt:
-	black poeditor/ tests/
+	isort ${SRC} ${TESTS}
+	black ${SRC} ${TESTS}
 
 lint:
-	black --check poeditor/ tests/
+	black --check ${SRC} ${TESTS}
+	mypy ${SRC}
 
 test:
-	pytest tests/
+	pytest ${TESTS}
