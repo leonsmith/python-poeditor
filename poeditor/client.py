@@ -25,7 +25,7 @@ class POEditorAPI(object):
     Please refers to https://poeditor.com/docs/api if you have questions
     """
 
-    HOST = "https://api.poeditor.com/v2/"
+    BASE = "https://api.poeditor.com/v2"
 
     SUCCESS_CODE = "success"
     FILE_TYPES = [
@@ -70,14 +70,19 @@ class POEditorAPI(object):
         """
         self.api_token = api_token
 
-    def _construct_url(self, path):
-        return "{}{}".format(self.HOST, path)
+    def _url(self, path: str) -> str:
+        """
+        Returns an absolute url for a given path by prepending the api base url.
+        """
+        return f"{self.BASE}/{path}"
 
-    def _make_request(self, url, payload, headers=None):
+    def _make_request(self, path: str, payload, headers=None):
         kwargs = {}
         if payload.get("file"):
             kwargs["files"] = {"file": payload.pop("file")}
-        response = requests.post(url, data=payload, headers=headers, **kwargs)
+        response = requests.post(
+            self._url(path), data=payload, headers=headers, **kwargs,
+        )
 
         if response.status_code != 200:
             raise POEditorException(
@@ -103,16 +108,14 @@ class POEditorAPI(object):
 
         return data
 
-    def _run(self, url_path, headers=None, **kwargs):
+    def _run(self, path: str, headers=None, **kwargs):
         """
         Requests API
         """
-        url = self._construct_url(url_path)
-
         payload = kwargs
         payload.update({"api_token": self.api_token})
 
-        return self._make_request(url, payload, headers)
+        return self._make_request(path, payload, headers)
 
     def _project_formatter(self, data):
         """
@@ -140,7 +143,7 @@ class POEditorAPI(object):
         """
         Returns the list of projects owned by user.
         """
-        data = self._run(url_path="projects/list")
+        data = self._run(path="projects/list")
         projects = data["result"].get("projects", [])
         return [self._project_formatter(item) for item in projects]
 
@@ -149,7 +152,7 @@ class POEditorAPI(object):
         creates a new project. Returns the id of the project (if successful)
         """
         description = description or ""
-        data = self._run(url_path="projects/add", name=name, description=description)
+        data = self._run(path="projects/add", name=name, description=description)
         return data["result"]["project"]["id"]
 
     def update_project(
@@ -167,7 +170,7 @@ class POEditorAPI(object):
         if reference_language is not None:
             kwargs["reference_language"] = reference_language
 
-        data = self._run(url_path="projects/update", id=project_id, **kwargs)
+        data = self._run(path="projects/update", id=project_id, **kwargs)
         return data["result"]["project"]["id"]
 
     def delete_project(self, project_id):
@@ -176,7 +179,7 @@ class POEditorAPI(object):
         You must be the owner of the project.
         """
         self._run(
-            url_path="projects/delete",
+            path="projects/delete",
             id=project_id,
         )
         return True
@@ -185,7 +188,7 @@ class POEditorAPI(object):
         """
         Returns project's details.
         """
-        data = self._run(url_path="projects/view", id=project_id)
+        data = self._run(path="projects/view", id=project_id)
         return self._project_formatter(data["result"]["project"])
 
     def list_project_languages(self, project_id):
@@ -193,21 +196,21 @@ class POEditorAPI(object):
         Returns project languages, percentage of translation done for each and the
         datetime (UTC - ISO 8601) when the last change was made.
         """
-        data = self._run(url_path="languages/list", id=project_id)
+        data = self._run(path="languages/list", id=project_id)
         return data["result"].get("languages", [])
 
     def add_language_to_project(self, project_id, language_code):
         """
         Adds a new language to project
         """
-        self._run(url_path="languages/add", id=project_id, language=language_code)
+        self._run(path="languages/add", id=project_id, language=language_code)
         return True
 
     def delete_language_from_project(self, project_id, language_code):
         """
         Deletes existing language from project
         """
-        self._run(url_path="languages/delete", id=project_id, language=language_code)
+        self._run(path="languages/delete", id=project_id, language=language_code)
         return True
 
     def set_reference_language(self, project_id, language_code):
@@ -220,7 +223,7 @@ class POEditorAPI(object):
         """
         Returns project's terms and translations if the argument language is provided.
         """
-        data = self._run(url_path="terms/list", id=project_id, language=language_code)
+        data = self._run(path="terms/list", id=project_id, language=language_code)
         return data["result"].get("terms", [])
 
     def add_terms(self, project_id, data):
@@ -254,7 +257,7 @@ class POEditorAPI(object):
             }
         ]
         """
-        data = self._run(url_path="terms/add", id=project_id, data=json.dumps(data))
+        data = self._run(path="terms/add", id=project_id, data=json.dumps(data))
         return data["result"]["terms"]
 
     def delete_terms(self, project_id, data):
@@ -271,7 +274,7 @@ class POEditorAPI(object):
             }
         ]
         """
-        data = self._run(url_path="terms/delete", id=project_id, data=json.dumps(data))
+        data = self._run(path="terms/delete", id=project_id, data=json.dumps(data))
         return data["result"]["terms"]
 
     def add_comment(self, project_id, data):
@@ -295,9 +298,7 @@ class POEditorAPI(object):
                 }
             ]
         """
-        data = self._run(
-            url_path="terms/add_comment", id=project_id, data=json.dumps(data)
-        )
+        data = self._run(path="terms/add_comment", id=project_id, data=json.dumps(data))
         return data["result"]["terms"]
 
     def sync_terms(self, project_id, data):
@@ -336,7 +337,7 @@ class POEditorAPI(object):
             }
         ]
         """
-        data = self._run(url_path="projects/sync", id=project_id, data=json.dumps(data))
+        data = self._run(path="projects/sync", id=project_id, data=json.dumps(data))
         return data["result"]["terms"]
 
     def update_project_language(
@@ -360,11 +361,11 @@ class POEditorAPI(object):
             kwargs["fuzzy_trigger"] = fuzzy_trigger
 
         data = self._run(
-            url_path="languages/update",
+            path="languages/update",
             id=project_id,
             language=language_code,
             data=json.dumps(data),
-            **kwargs
+            **kwargs,
         )
         return data["result"]["translations"]
 
@@ -408,7 +409,7 @@ class POEditorAPI(object):
             )
 
         data = self._run(
-            url_path="projects/export",
+            path="projects/export",
             id=project_id,
             language=language_code,
             type=file_type,
@@ -477,7 +478,7 @@ class POEditorAPI(object):
 
         with open(file_path, "r+b") as local_file:
             data = self._run(
-                url_path="projects/upload",
+                path="projects/upload",
                 id=project_id,
                 language=language_code,
                 file=local_file,
@@ -632,7 +633,7 @@ class POEditorAPI(object):
         Returns a comprehensive list of all languages supported by POEditor.
         You can find it here (https://poeditor.com/docs/languages), too.
         """
-        data = self._run(url_path="languages/available")
+        data = self._run(path="languages/available")
         return data["result"].get("languages", [])
 
     def list_contributors(self, project_id=None, language_code=None):
@@ -640,7 +641,7 @@ class POEditorAPI(object):
         Returns the list of contributors
         """
         data = self._run(
-            url_path="contributors/list", id=project_id, language=language_code
+            path="contributors/list", id=project_id, language=language_code
         )
         return data["result"].get("contributors", [])
 
@@ -649,7 +650,7 @@ class POEditorAPI(object):
         Adds a contributor to a project language
         """
         self._run(
-            url_path="contributors/add",
+            path="contributors/add",
             id=project_id,
             name=name,
             email=email,
@@ -662,7 +663,7 @@ class POEditorAPI(object):
         Adds a contributor to a project language
         """
         self._run(
-            url_path="contributors/add",
+            path="contributors/add",
             id=project_id,
             name=name,
             email=email,
@@ -675,7 +676,7 @@ class POEditorAPI(object):
         Removes a contributor
         """
         self._run(
-            url_path="contributors/remove",
+            path="contributors/remove",
             id=project_id,
             email=email,
             language=language,
