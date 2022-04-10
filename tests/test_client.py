@@ -3,7 +3,7 @@ import os
 import re
 import unittest
 
-from poeditor.client import POEditorAPI, POEditorArgsException, POEditorException
+from poeditor.client import Client, POEditorArgsException, POEditorException
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ class TestClient(unittest.TestCase):
 
     def test_authentication(self):
         # bad token
-        client = POEditorAPI(api_token="BAD_TOKEN")
+        client = Client(api_token="BAD_TOKEN")
 
         with self.assertRaises(POEditorException) as context:
             client.list_projects()
@@ -23,12 +23,12 @@ class TestClient(unittest.TestCase):
         )
 
         # good token
-        client = POEditorAPI(api_token=self.API_TOKEN)
+        client = Client(api_token=self.API_TOKEN)
         client.list_projects()
 
     def test_scenario(self):
 
-        client = POEditorAPI(api_token=self.API_TOKEN)
+        client = Client(api_token=self.API_TOKEN)
 
         # Project:
         projects = client.list_projects()
@@ -232,7 +232,7 @@ class TestClient(unittest.TestCase):
 
     def tearDown(self):
         if hasattr(self, "new_project_id"):
-            client = POEditorAPI(api_token=self.API_TOKEN)
+            client = Client(api_token=self.API_TOKEN)
             logger.info(
                 "Deleting test project project_id={}. ".format(self.new_project_id)
             )
